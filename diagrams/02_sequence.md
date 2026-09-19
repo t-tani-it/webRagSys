@@ -1,0 +1,30 @@
+# 2. シーケンス図 — 登録と質問応答の通信 (webRagSys)
+
+```mermaid
+sequenceDiagram
+    actor User
+    actor Admin as 管理者
+    participant Docs as documents.py
+    participant Chunker as chunker.py
+    participant VS as vectorstore.py
+    participant Chat as chat.py
+    participant Chain as chain.py
+    participant LLM as provider.py
+
+    Admin->>Docs: POST /documents タイトル＋本文
+    Docs->>Docs: validate_input
+    Docs->>Chunker: split_text(content)
+    Chunker-->>Docs: chunks
+    Docs->>VS: save_chunks(doc_id, chunks)
+    VS-->>Docs: 保存完了
+    Docs-->>Admin: 201 Created
+
+    User->>Chat: POST /chat 質問
+    Chat->>Chain: answer_question(db, question)
+    Chain->>VS: search(question, top_k=3)
+    VS-->>Chain: 類似チャンク
+    Chain->>LLM: generate_answer(質問, コンテキスト)
+    LLM-->>Chain: 回答文
+    Chain-->>Chat: 回答＋source_ids
+    Chat-->>User: JSON返却
+```

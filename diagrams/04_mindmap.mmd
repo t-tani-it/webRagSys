@@ -1,0 +1,43 @@
+mindmap
+  root((webRagSys))
+    API_Layer
+      main.py
+        create_app
+        health
+      routers/documents.py
+        CRUD 5件
+        validate_input
+      routers/chat.py
+        POST chat
+      schemas
+        DocumentCreate Update Out
+        ChatRequest Response
+    Rag_Layer LangChain
+      chunker.py
+        split_text 500_50
+      embeddings.py
+        Fake既定
+        OpenAI本番
+      vectorstore.py
+        save_chunks 置換
+        search top_k 3
+      chain.py
+        answer_question
+    Data_Layer
+      Postgres pgvector
+        documents
+        document_chunks
+      SQLite退避
+        テスト用 test.db
+    Llm_Layer
+      provider.py 切替
+      fake_provider.py
+        FAKE回答
+    Configuration
+      config.py
+        Settings集約
+        USE_FAKE
+        CHUNK_SIZE TOP_K
+    Tests
+      test_documents 5件
+      test_chat RAG検証

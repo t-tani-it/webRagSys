@@ -1,0 +1,26 @@
+classDiagram
+    class Chunker {
+        +split_text(content, chunk_size, overlap) list
+    }
+    class Embeddings {
+        +embed_texts(texts) vectors
+        +embed_query(text) vector
+        +_fake_vector(text) vector
+    }
+    class VectorStore {
+        +save_chunks(db, doc_id, chunks)
+        +delete_chunks(db, doc_id)
+        +search(db, query, top_k) chunks
+        -_cosine(a, b) float
+    }
+    class RagChain {
+        +answer_question(db, question) answer
+    }
+    class LlmProvider {
+        +generate_answer(question, context) str
+        +fake_answer(question, context) str
+    }
+    RagChain ..> VectorStore : 検索と保存を依頼
+    RagChain ..> LlmProvider : 生成を依頼
+    VectorStore ..> Embeddings : ベクトル化を依頼
+    VectorStore ..> Chunker : 分割済み前提
