@@ -64,12 +64,11 @@ copy .env.example .env
 
 ## 起動方法
 ```bash
-# ローカル起動
+# ローカル起動（正規の動作確認手段）
 uvicorn src.api.main:app --reload
-
-# Docker起動（予定）
-docker compose up --build
 ```
+
+Docker起動は対象外とする（storage制約のため、2026-09-19決定）。Dockerfileとdocker-compose.ymlは構成見本として残す。
 
 ## API一覧
 | メソッド | エンドポイント | 内容 |
@@ -146,10 +145,11 @@ python -m ruff check src tests config.py
 - 高度なRAG検索、AIエージェント機能
 
 ## 完成条件（初期版）
-1. FastAPI起動、PostgreSQL接続、文書CRUD動作
+1. FastAPI起動、文書CRUD動作（ローカル起動で確認、DBはPostgreSQLまたはSQLite退避）
 2. LLM API利用可（本番）／偽実装動作（既定）
 3. Embedding化、Vector保存、類似検索、RAG回答
-4. Docker構築、GitHubでREADME確認、基本テスト実行
+4. GitHubでREADME確認、基本テスト実行
+5. Docker構築は対象外（storage制約のため、2026-09-19決定）
 
 ## 注意点
 - `.env`はGit管理対象外。APIキー等を公開しないこと

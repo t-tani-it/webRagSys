@@ -133,7 +133,9 @@ OpenCodeはこのAGENTS.mdを参照して作業を行う。
 ## 注意点
 - RAGはembedding更新が必要（文書登録・更新・削除時にchunksを作り直す）
 - chunk_sizeとtop_kはconfigに集約する
-- pgvector拡張の有効化SQLが必要
+- pgvector拡張の有効化SQLが必要（PostgreSQL使用時）
+- Docker検証は対象外とする（storage制約のため、2026-09-19決定）。Dockerfileとdocker-compose.ymlは構成見本として残すが、起動検証は行わない
+- ローカル起動（uvicorn＋SQLite退避／PostgreSQL直結）を正規の動作確認手段とする
 - 認証・CI/CD・クラウド・監視・負荷対策は必要最小限とする
 - 本質（Python→API→DB→LLM→RAG）の理解と実装を優先する
 

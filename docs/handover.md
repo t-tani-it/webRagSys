@@ -286,13 +286,43 @@ git push -u origin main
 - テスト：7件成功、ruffエラー0を再確認
 
 ### 残タスク
-- [ ] Docker検証：Docker Desktop導入後にdocker compose up --buildとPostgreSQL＋pgvector接続確認
+- なし（Docker検証は対象外化、以下フェーズ参照）
 
 ### 実行コマンド
 ```powershell
 python -m pytest tests -q
 python -m ruff check src tests config.py
 python -m uvicorn src.api.main:app --reload
+```
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-19 Docker対象外化フェーズ
+
+### 方針（計画）
+- storage制約のためDocker検証を計画から外す（2026-09-19決定）
+- Dockerfileとdocker-compose.ymlは構成見本として残し、削除しない
+- 公式最少約6GB、本件規模で2～4GB程度の見込みを確認済み
+- 正規の動作確認手段はローカル起動（uvicorn＋SQLite退避／PostgreSQL直結）とする
+
+### 実装（実行）
+- AGENTS.md注意点にDocker検証対象外を追記
+- READMEの起動方法と完成条件を更新（Docker項目を対象外化）
+- 本handoverの残タスクを更新
+
+### 結果
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+python -m pytest tests -q
+python -m ruff check src tests config.py
 ```
 
 ## 公開禁止情報
