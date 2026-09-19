@@ -71,7 +71,8 @@ def init_db() -> None:
     """
     from src.db import models  # noqa: F401 解説：テーブル登録のため遅延importする。
 
-    if DATABASE_URL.startswith("postgresql"):
+    # 解説：URL文字列ではなく実engineの方言で判定する（SQLite退避時は拡張不要）。
+    if engine.dialect.name == "postgresql":
         with engine.begin() as conn:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     Base.metadata.create_all(bind=engine)

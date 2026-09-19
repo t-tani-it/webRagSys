@@ -260,3 +260,40 @@ git push -u origin main
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-19 起動検証フェーズ
+
+### 方針（計画）
+- 完成条件のFastAPI起動、CRUD動作、RAG回答を実HTTPで検証する
+- Docker未導入のためSQLite退避起動で検証し、Postgres検証は保留する
+
+### 実装（実行）
+- 不具合：uvicorn起動直後に失敗、原因はinit_dbがURL文字列でPostgres判定しSQLite退避時もCREATE EXTENSIONを実行していた
+- 修正：src/db/database.pyのinit_dbを実engine方言（engine.dialect.name）判定に変更
+- 再検証：pytest 7件成功、ruffエラー0を確認後に実HTTP検証を実施
+- 実HTTP検証（port 8001、同一セッションで起動→検証→停止）：
+  - GET /health → ok
+  - POST /documents → id=1で作成
+  - GET /documents → 1件
+  - GET /documents/1 → 詳細取得
+  - POST /chat → FAKE回答＋source_ids=1
+  - GET /documents/99999 → 404
+
+### 結果
+- 起動検証：すべて成功（日本語表示乱れはコンソール出力の文字化けのみでアプリは正常）
+- テスト：7件成功、ruffエラー0を再確認
+
+### 残タスク
+- [ ] Docker検証：Docker Desktop導入後にdocker compose up --buildとPostgreSQL＋pgvector接続確認
+
+### 実行コマンド
+```powershell
+python -m pytest tests -q
+python -m ruff check src tests config.py
+python -m uvicorn src.api.main:app --reload
+```
+
+## 公開禁止情報
+公開禁止情報は含まれていません
