@@ -194,7 +194,7 @@ uvicorn src.api.main:app --reload
 
 ### 残タスク
 - [ ] Docker検証：Docker導入後にcompose起動とPostgreSQL＋pgvector接続確認
-- [ ] GitHub公開：public、分割コミット、push前禁止情報チェック
+- [x] GitHub公開：public、分割コミット、push前禁止情報チェック
 
 ### 実行コマンド
 ```powershell
@@ -216,6 +216,47 @@ uvicorn src.api.main:app --reload
 - docs/handover.md＋.pdf（本ファイル）
 - README.md＋README.pdf（追記済み）
 - diagrams 6種（.mmd＋.md＋.pdf）、convert_to_pdf.ps1、puppeteer設定2件
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-19 GitHub公開フェーズ
+
+### 方針（計画）
+- publicリポジトリで公開し、履歴が読める分割コミットにする
+- push前に公開禁止情報（.env、実パス、キー）をチェックする
+- Dockerは未導入のため検証は保留し、導入後の手順を残す
+
+### 実装（実行）
+- 状態確認：Docker未検出、gh 2.96.0認証済み（HTTPS）、git未初期化を確認
+- git init -b main、user.nameとuser.emailをリポジトリローカルに設定（noreply形式）
+- 分割コミット6件：
+  - 骨格・設定・Docker基盤
+  - DB・スキーマ・RAG・LLM偽実装
+  - API（documents CRUD・chat）
+  - テスト（CRUD・chat偽実装）
+  - docs・図・PDF
+  - srcパッケージ初期化ファイル
+- push前チェック：.env未追跡、実パスなし、キーなしを確認
+- gh repo create webRagSys --public --source . --remote originで作成
+- git push -u origin mainで公開
+
+### 結果
+- 公開先：https://github.com/t-tani-it/webRagSys
+- mainがorigin/mainを追跡する状態を確認
+- git statusはクリーン（handover更新分を除く）
+
+### 残タスク
+- [ ] Docker検証：Docker Desktop導入後にdocker compose up --buildとPostgreSQL＋pgvector接続確認
+- [ ] 本フェーズのhandover更新分をコミット＋pushする
+
+### 実行コマンド
+```powershell
+git log --oneline
+git push -u origin main
+```
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
