@@ -48,10 +48,17 @@ webRagSys/
 
 ## セットアップ方法
 ```bash
-# 1. 依存導入
+# 0. プロジェクト直下へ移動
+cd <プロジェクト直下>
+
+# 1. 仮想環境作成・有効化（venv標準）
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+# 2. 依存導入
 pip install -r requirements.txt
 
-# 2. 環境変数ファイル作成（公開用見本から複製）
+# 3. 環境変数ファイル作成（公開用見本から複製）
 copy .env.example .env
 
 # 3. .env編集（偽実装のままならキー不要）
@@ -64,6 +71,9 @@ copy .env.example .env
 
 ## 起動方法
 ```bash
+# .venv有効化が前提（プロンプトに(.venv)表示を確認）
+.\.venv\Scripts\Activate.ps1
+
 # ローカル起動（正規の動作確認手段）
 uvicorn src.api.main:app --reload
 ```

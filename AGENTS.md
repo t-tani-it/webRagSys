@@ -11,6 +11,7 @@ OpenCodeはこのAGENTS.mdを参照して作業を行う。
 ## 開発環境
 - OS：Windows前提（PowerShell 5.1）
 - Python 3.11（実測）／3.10互換を保つ
+- 仮想環境はvenv標準（プロジェクト直下の.venv、他案件のconda envを流用しない）
 - Git / GitHub、Docker、PostgreSQL＋pgvector、LangChain、OpenAI API
 - GPUは使用しない。EmbeddingとLLMはAPIまたはCPU動作のFakeで代替する
 
@@ -125,7 +126,9 @@ OpenCodeはこのAGENTS.mdを参照して作業を行う。
 - 例外処理は明示的に書くこと（存在しないID、不正リクエスト、DB接続エラー、LLM APIエラー、外部API通信エラー）
 
 ## ビルド・実行・テスト
-- 依存導入：`pip install -r requirements.txt`
+- 仮想環境作成：`python -m venv .venv`（プロジェクト直下、初回のみ）
+- 有効化：`.\.venv\Scripts\Activate.ps1`（プロンプトに`(.venv)`表示を確認）
+- 依存導入：`pip install -r requirements.txt`（.venv有効化後に実行）
 - API起動：`uvicorn src.api.main:app --reload`
 - テスト：`pytest`（または`python -m pytest tests -q`）
 - Lint：`ruff`（例：`python -m ruff check src tests config.py`）
