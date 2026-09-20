@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant API as documents.py
+    participant Chunker as chunker.py
+    participant Emb as embeddings.py
+    participant VS as vectorstore.py
+    API->>Chunker: split_text(content)
+    Chunker-->>API: chunks
+    API->>VS: save_chunks(doc_id, chunks)
+    VS->>Emb: embed_texts(chunks)
+    Emb-->>VS: vectors
+    VS->>VS: 置換保存

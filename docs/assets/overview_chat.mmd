@@ -1,0 +1,14 @@
+sequenceDiagram
+    actor User
+    participant API as chat.py
+    participant Chain as chain.py
+    participant VS as vectorstore.py
+    participant LLM as provider.py
+    User->>API: POST /chat 質問
+    API->>Chain: answer_question(db, question)
+    Chain->>VS: search(question, top_k=3)
+    VS-->>Chain: 類似チャンク
+    Chain->>LLM: generate_answer(質問, コンテキスト)
+    LLM-->>Chain: 回答文
+    Chain-->>API: 回答＋source_ids
+    API-->>User: JSON返却

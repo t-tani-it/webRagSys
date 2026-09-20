@@ -72,6 +72,11 @@ webRagSys/
 
 ### 2.1 依存関係の全体像
 
+![モジュール依存図](assets/overview_modules.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
+
 ```mermaid
 classDiagram
     class ApiRouter {
@@ -102,6 +107,7 @@ classDiagram
     RagChain ..> DbLayer : チャンク保存と検索
     RagChain ..> LlmProvider : 文章生成を依頼
 ```
+</details>
 
 ### 2.2 依存の方向性
 
@@ -149,6 +155,11 @@ webRagSysのデータは **「登録する → RAG化する → 質問に答え�
 
 ### 3.1 全体フロー
 
+![全体フロー図](assets/overview_flow.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
+
 ```mermaid
 flowchart TD
     A(["Start: uvicorn src.api.main:app"]) --> B[main.py: create_app]
@@ -164,6 +175,7 @@ flowchart TD
     K --> L[llm/provider.py: generate_answer<br>Fake既定]
     L --> M[回答＋source_ids返却]
 ```
+</details>
 
 ### 3.2 フェーズ1：文書登録（外部 → DB）
 
@@ -181,6 +193,11 @@ CRUDの5APIが`documents`テーブルを操作します。
 
 ### 3.3 フェーズ2：RAG化（文書 → ベクトル）
 
+![RAG化シーケンス図](assets/overview_rag.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
+
 ```mermaid
 sequenceDiagram
     participant API as documents.py
@@ -194,6 +211,7 @@ sequenceDiagram
     Emb-->>VS: vectors
     VS->>VS: 置換保存
 ```
+</details>
 
 RAG初心者向けの要点：
 
@@ -202,6 +220,11 @@ RAG初心者向けの要点：
 - **SQL検索との違い**：SQLは完全一致探し、ベクトル検索は意味の近さ探しです。「休暇は何日」と「年次休暇は10日」は文字は違いますが意味が近いため検索できます。
 
 ### 3.4 フェーズ3：質問応答（質問 → 回答）
+
+![質問応答シーケンス図](assets/overview_chat.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
 
 ```mermaid
 sequenceDiagram
@@ -219,6 +242,7 @@ sequenceDiagram
     Chain-->>API: 回答＋source_ids
     API-->>User: JSON返却
 ```
+</details>
 
 **データベースのテーブル構成**：
 

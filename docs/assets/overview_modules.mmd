@@ -1,0 +1,28 @@
+classDiagram
+    class ApiRouter {
+        +list_documents()
+        +create_document()
+        +update_document()
+        +delete_document()
+        +chat()
+    }
+    class RagChain {
+        +answer_question()
+        +split_text()
+        +embed_texts()
+        +search()
+    }
+    class LlmProvider {
+        +generate_answer()
+        +fake_answer()
+    }
+    class DbLayer {
+        +get_db()
+        +init_db()
+        +Document()
+        +DocumentChunk()
+    }
+    ApiRouter ..> RagChain : 検索と回答を依頼
+    ApiRouter ..> DbLayer : 保存と読出を依頼
+    RagChain ..> DbLayer : チャンク保存と検索
+    RagChain ..> LlmProvider : 文章生成を依頼
