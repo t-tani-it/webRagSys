@@ -23,7 +23,7 @@
 | LLM | 外部LLM API（モデル非依存）、既定は偽実装 |
 | テスト | pytest |
 | Lint | ruff |
-| 環境 | Docker／docker-compose、Git／GitHub |
+| 環境 | Git／GitHub、venv（Docker／docker-composeは構成見本のみで起動対象外） |
 
 ## システム構成
 ```text
@@ -61,12 +61,13 @@ pip install -r requirements.txt
 # 3. 環境変数ファイル作成（公開用見本から複製）
 copy .env.example .env
 
-# 3. .env編集（偽実装のままならキー不要）
+# 4. .env編集（偽実装のままならキー不要）
 # USE_FAKE=true
 # 本番のみ以下を設定
 # OPENAI_API_KEY=xxxx
 # USE_FAKE=false
-# DATABASE_URL=postgresql://user:password@db:5432/webraq
+# ローカル起動はSQLite指定（Docker対象外のため）
+# DATABASE_URL=sqlite:///./app.db
 ```
 
 ## 起動方法
@@ -79,6 +80,12 @@ uvicorn src.api.main:app --reload
 ```
 
 Docker起動は対象外とする（storage制約のため、2026-09-19決定）。Dockerfileとdocker-compose.ymlは構成見本として残す。
+
+## 動作確認
+- http://127.0.0.1:8000/health → `{"status":"ok"}`表示で生存確定
+- http://127.0.0.1:8000/docs → 操作画面表示
+- http://127.0.0.1:8000/documents → 初期は`[]`表示で正常
+- `/`は未定義のため404が正常
 
 ## API一覧
 | メソッド | エンドポイント | 内容 |
@@ -100,13 +107,13 @@ Docker起動は対象外とする（storage制約のため、2026-09-19決定）
  ↓
 Embedding（本番：外部API／既定：FakeEmbeddings）
  ↓
-Vector Databaseへ保存（pgvector）
+Vector Databaseへ保存（本番pgvector／SQLite時はJSON列で代替）
 
 ユーザー質問
  ↓
 Embedding
  ↓
-類似文書検索（pgvector＋LangChain Retriever）
+類似文書検索（pgvectorまたはPython側コサイン計算＋LangChain Retriever）
  ↓
 検索結果をコンテキスト化
  ↓
@@ -137,7 +144,7 @@ python -m pytest tests -q
 python -m ruff check src tests config.py
 ```
 
-テスト内容（予定）：
+テスト内容（実施済み7件）：
 - 文書：登録、取得、更新、削除、存在しないIDのエラー
 - チャット：質問送信、偽LLM回答、登録文書利用、APIエラー時処理
 

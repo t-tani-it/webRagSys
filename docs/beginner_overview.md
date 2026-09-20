@@ -11,9 +11,9 @@ Pythonの基本構文ではなく、FastAPIとLangChainによるRAGの仕組み�
 
 **webRagSys** は、社内文書を登録し、その文書を根拠にAIが回答するWeb APIシステムです。
 
-- 文書CRUD：タイトルと本文を登録・一覧・詳細・更新・削除する
-- RAG化：文書を分割し、Embedding化してVector Databaseへ保存する
-- AIチャット：質問をEmbedding化し、類似文書を検索してLLMが回答する
+- 文書CRUD（Create登録／Read読出／Update更新／Delete削除）：タイトルと本文を登録・一覧・詳細・更新・削除する
+- RAG化（Retrieval-Augmented Generation＝検索拡張生成）：文書を分割し、Embedding化してVector Databaseへ保存する
+- AIチャット：質問をEmbedding化し、類似文書を検索してLLM（Large Language Model＝大規模言語モデル）が回答する
 - 既定は偽実装：EmbeddingもLLMもFakeを使い、課金なしで学習できる
 
 たとえるなら、文書管理は書庫係、RAGは索引係、LLMは回答係です。
@@ -36,7 +36,8 @@ webRagSys/
 ├── src/rag/               ← chunker、embeddings、vectorstore、chain
 ├── src/llm/               ← provider.py（切替）、fake_provider.py（偽回答）
 ├── tests/                 ← test_documents.py、test_chat.py、conftest.py
-├── docs/                  ← 本書、handover.md
+├── docs/                  ← 本書、handover.md、assets/（図PNG）
+├── .venv/                 ← 仮想環境（Git除外、各自作成）
 └── diagrams/              ← 図の元データ（Mermaid形式）
 ```
 
@@ -144,6 +145,7 @@ vectorstore.save_chunks(db, doc.id, chunker.split_text(doc.content))
 
 # chain.py（質問時の流れ）
 hits = vectorstore.search(db, question)  # 類似検索
+context = "\n".join(h.content for h in hits)  # 類似文を結合
 answer = generate_answer(question, context)  # LLM生成
 ```
 
@@ -291,6 +293,8 @@ class DocumentOut(BaseModel):
 
 起動時に`init_db()`を実行し、テーブルとpgvector拡張を作成します。テスト時はDB未起動でもimportできるよう、失敗時は警告記録のみにしています。
 
+**注意点**：`on_event`は新版FastAPIで非推奨表示になるが動作する。将来は`lifespan`方式への置換対象である。
+
 ---
 
 ### 4.2 LangChain編
@@ -382,7 +386,7 @@ dot / (na * nb)
 | chat | POST /chat | 質問応答 |
 | schemas | 型定義 | 入出力雛形の参照用。実行対象ではない |
 
-**注意点**：`/`は未定義のため404が正常である。確認は`/health`、``/docs``、`/documents`の3件で行う。
+**注意点**：`/`は未定義のため404が正常である。確認は`/health`、`/docs`、`/documents`の3件で行う。
 
 ### 5.2 群別Code対応表
 
