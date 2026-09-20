@@ -536,3 +536,41 @@ python -m ruff check src tests config.py
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 Rev.A保存フェーズ（初心者文書と図の別名保存）
+
+### 方針（計画）
+- 初心者文書とdiagrams文書を精読し理解可否を確認する
+- 原ファイルは変更せず別名Rev.A保存とする
+- RAG初心者向けに読み方と実コード対応を補足する
+
+### 実装（実行）
+- docs/beginner_overview_RevA.md＋.pdf（です調統一、略語展開、SQLite正規明記、Docker対象外注記、簡略図注記）
+- diagrams 6件のRev.A md＋mmd＋pdf（01は201/200分離、03aは依存修正、03bはRAG経路追加、04はapp.db追加、02と05は解説追加）
+- READMEのドキュメント節にRev.A案内2行追加
+
+### 結果
+- PDF：Rev.A文書は画像7件埋め込み、図PDFは6件生成
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+npx.cmd -y @mermaid-js/mermaid-cli -i diagrams/01_flowchart_RevA.mmd -o diagrams/01_flowchart_RevA.pdf --pdfFit
+npx md-to-pdf docs/beginner_overview_RevA.md
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- docs/beginner_overview_RevA.md＋.pdf
+- diagrams/*_RevA.md＋.mmd＋.pdf（6件）
+- README.md（Rev.A案内）
+- docs/handover.md＋.pdf（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
