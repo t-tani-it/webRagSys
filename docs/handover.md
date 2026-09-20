@@ -327,3 +327,94 @@ python -m ruff check src tests config.py
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 docs図埋め込みフェーズ（beginner_overview PDFの図表示修正）
+
+### 方針（計画）
+- docs PDF内でMermaid図が生コード表示になる不具合を修正する
+- 原因は変換道具の差：diagramsはmermaid-cli（絵対応）、docsはmd-to-pdf（mermaid非対応）
+- .mmd不足ではない（diagramsに6件存在を確認済み）
+- 画像埋め込み方式を採用：mermaid部分をPNG化してmdに貼り、md-to-pdfでPDF化する
+- vscode-pdf NextはPDF閲覧専用のため不採用（md変換不可）
+
+### 実装（実行）
+- docs/assetsフォルダ作成、beginner_overview.md内4ブロックをmmd分離：
+- overview_modules.mmd（2.1 依存関係図）、overview_flow.mmd（3.1 全体フロー）
+- overview_rag.mmd（3.3 RAG化）、overview_chat.mmd（3.4 質問応答）
+- mermaid-cliで4件PNG生成（日本語表示を確認済み）
+- beginner_overview.mdの各mermaidブロックを画像参照＋details（元コード保持）に置換
+- md-to-pdfでbeginner_overview.pdf再生成
+- handover.mdはmermaidなしのため対象外、README.mdも対象外
+
+### 結果
+- 単体テスト：7件すべて成功（python -m pytest tests -q）
+- Lint：ruffエラー0
+- PDF：画像5件埋め込み確認（pypdfで検証）、425KB→527KB
+- 図PDF：diagrams 6件は変更なし
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+# PNG生成
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_modules.mmd -o docs/assets/overview_modules.png
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_flow.mmd -o docs/assets/overview_flow.png
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_rag.mmd -o docs/assets/overview_rag.png
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_chat.mmd -o docs/assets/overview_chat.png
+# docs PDF再生成
+npx md-to-pdf docs/beginner_overview.md
+# テスト／Lint
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- docs/assets/overview_*.mmd＋.png（各4件）
+- docs/beginner_overview.md＋.pdf（画像埋め込み版）
+- docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 venv標準化フェーズ（.venv運用の文書化）
+
+### 方針（計画）
+- 仮想環境はvenv標準に統一する（他案件のconda envを流用しない）
+- 配置はプロジェクト直下の.venvとする
+- .venvは絶対パスを含むため.gitignoreでGit除外する（親AGENTS.mdにも同旨を追記）
+- 手順はcd移動→venv作成→Activate→pip導入→.env複製→uvicorn起動の順に固定する
+
+### 実装（実行）
+- 親AGENTS.mdの開発環境（前提）節と02テンプレート節にvenv標準3行を追記
+- webRagSys/.gitignoreに.venv/とvenv/を追記（activate系の絶対パス混入防止）
+- webRagSys/README.mdのセットアップ節と起動節をvenv手順に更新（実パスは記載なし）
+- webRagSys/AGENTS.mdの開発環境節とビルド節をvenv手順に更新
+- .venvは利用者側で作成済みのため、本作業では文書更新のみ行う
+
+### 結果
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+cd <プロジェクト直下>
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn src.api.main:app --reload
+```
+
+### 実行成果物
+- 親AGENTS.md（venv標準追記）
+- webRagSys/.gitignore、README.md、AGENTS.md、docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
