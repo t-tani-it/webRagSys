@@ -418,3 +418,86 @@ uvicorn src.api.main:app --reload
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 SQLite運用フェーズ（.env修正と起動検証）
+
+### 方針（計画）
+- DockerなしではPostgreSQLサーバが存在しないためSQLite退避を正規運用とする
+- 起動失敗の原因はDATABASE_URLがdocker専用host名dbを指していたこと
+- psycopg2導入済みのためSQLite退避分岐に入らずPostgres直行していた
+- 既存.venvは3.9.7だが本検証では動作したため版更新は保留する
+
+### 実装（実行）
+- .envのDATABASE_URLを`sqlite:///./app.db`に変更（1行のみ）
+- 実HTTP検証（port 8001、起動→検証→停止）：
+- GET /health → ok
+- POST /documents → id=1で作成
+- GET /documents → 1件
+- GET /documents/1 → 詳細取得
+- POST /chat → FAKE回答＋source_ids=1
+- 検証後にapp.dbを削除（実行生成物のため）
+
+### 結果
+- 起動検証：すべて成功（日本語表示乱れはコンソール出力の文字化けのみでアプリは正常）
+- テスト：7件成功（.venvのPython 3.9.7で実行）、ruffエラー0
+
+### 残タスク
+- [ ] .venvをPython 3.11で作り直す（現3.9.7、案件要求3.10互換のため）
+
+### 実行コマンド
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pytest tests -q
+python -m ruff check src tests config.py
+python -m uvicorn src.api.main:app --port 8001
+```
+
+### 実行成果物
+- .env（DATABASE_URLをSQLiteに変更、Git対象外のため差分なし）
+- docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 第5章追記フェーズ（操作と内部の対応）
+
+### 方針（計画）
+- /docsの4分類と群別Code対応表と内部traceを初心者文書に集約する
+- 新規文書は作らずbeginner_overview.mdへ第5章追記する
+- 図は現行方式（mermaid PNG化＋details併記）を踏襲する
+
+### 実装（実行）
+- docs/assets/overview_ops.mmd＋.png（操作Code対応図）
+- docs/assets/overview_internals.mmd＋.png（内部処理図）
+- beginner_overview.mdへ第5章（5.1分類、5.2対応表、5.3内部trace、5.4見分け方）追記
+- md-to-pdfでbeginner_overview.pdf再生成
+- READMEのドキュメント節を1行更新
+
+### 結果
+- PDF：画像7件埋め込み確認（pypdfで検証）
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- [ ] .venvをPython 3.11で作り直す（端末固有・現3.9.7でも動作中のため優先度低）
+
+### 実行コマンド
+```powershell
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_ops.mmd -o docs/assets/overview_ops.png
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/overview_internals.mmd -o docs/assets/overview_internals.png
+npx md-to-pdf docs/beginner_overview.md
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- docs/assets/overview_ops.*、overview_internals.*（mmd＋png各2件）
+- docs/beginner_overview.md＋.pdf（第5章追記版）
+- README.md（ドキュメント節1行更新）
+- docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
