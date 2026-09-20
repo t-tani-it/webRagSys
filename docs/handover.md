@@ -574,3 +574,40 @@ python -m ruff check src tests config.py
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 取説作成フェーズ（操作手順書）
+
+### 方針（計画）
+- 操作手順に特化した取扱説明書を新規作成する
+- コード解説は初心者文書へ委譲し重複を避ける
+
+### 実装（実行）
+- docs/assets/user_manual_flow.mmd＋.png（操作フロー図、/docs表記の修正あり）
+- docs/user_manual.md＋.pdf（起動、/docs読方、登録、会話、異常時、停止）
+- READMEのドキュメント節に取説案内1行追加
+
+### 結果
+- PDF：画像埋め込み確認（pypdfで検証）
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+npx.cmd -y @mermaid-js/mermaid-cli -i docs/assets/user_manual_flow.mmd -o docs/assets/user_manual_flow.png --pdfFit
+npx md-to-pdf docs/user_manual.md
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- docs/user_manual.md＋.pdf
+- docs/assets/user_manual_flow.mmd＋.png
+- README.md（取説案内）
+- docs/handover.md＋.pdf（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
