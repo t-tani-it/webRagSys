@@ -1,0 +1,31 @@
+classDiagram
+    class DocumentsApi {
+        +create_document()
+        +update_document()
+    }
+    class Chunker {
+        +split_text(content, chunk_size, overlap) list
+    }
+    class Embeddings {
+        +embed_texts(texts) vectors
+        +embed_query(text) vector
+        +_fake_vector(text) vector
+    }
+    class VectorStore {
+        +save_chunks(db, doc_id, chunks)
+        +delete_chunks(db, doc_id)
+        +search(db, query, top_k) chunks
+        -_cosine(a, b) float
+    }
+    class RagChain {
+        +answer_question(db, question) answer
+    }
+    class LlmProvider {
+        +generate_answer(question, context) str
+        +fake_answer(question, context) str
+    }
+    DocumentsApi ..> Chunker : 登録更新時に分割を依頼
+    DocumentsApi ..> VectorStore : 保存を依頼
+    RagChain ..> VectorStore : 検索を依頼
+    RagChain ..> LlmProvider : 生成を依頼
+    VectorStore ..> Embeddings : ベクトル化を依頼

@@ -1,0 +1,46 @@
+classDiagram
+    class Main {
+        +create_app()
+        +health()
+    }
+    class DocumentsRouter {
+        +list_documents()
+        +get_document()
+        +create_document()
+        +update_document()
+        +delete_document()
+    }
+    class ChatRouter {
+        +chat()
+    }
+    class RagChain {
+        +answer_question()
+    }
+    class VectorStore {
+        +save_chunks()
+        +search()
+    }
+    class LlmProvider {
+        +generate_answer()
+    }
+    class DbLayer {
+        +get_db()
+        +init_db()
+        +Document()
+        +DocumentChunk()
+    }
+    class Settings {
+        +database_url
+        +chunk_size
+        +top_k
+        +use_fake
+    }
+    Main ..> DocumentsRouter : 登録
+    Main ..> ChatRouter : 登録
+    DocumentsRouter ..> DbLayer : 保存読出
+    DocumentsRouter ..> VectorStore : RAG化を依頼
+    ChatRouter ..> DbLayer : 読出
+    ChatRouter ..> RagChain : 回答を依頼
+    RagChain ..> VectorStore : 検索を依頼
+    RagChain ..> LlmProvider : 生成を依頼
+    Main ..> Settings : 設定読込

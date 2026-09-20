@@ -1,0 +1,21 @@
+flowchart TD
+    A(["Start: uvicorn src.api.main:app"]) --> B[main.py: create_app]
+    B --> C[database.py: init_db<br>テーブル作成＋pgvector拡張]
+    C --> D{リクエスト種別}
+    D -->|POST /documents| E[documents.py: 登録]
+    E --> F[chunker.py: split_text<br>500文字分割 overlap 50]
+    F --> G[embeddings.py: embed_texts<br>Fake既定]
+    G --> H[vectorstore.py: save_chunks<br>置換保存]
+    H --> I[201 Created 返却]
+    D -->|PUT /documents/id| E2[documents.py: 更新]
+    E2 --> F
+    I2[200 OK 返却]
+    H --> I2
+    D -->|GET /documents<br>GET /documents/id| J[documents.py: 一覧詳細<br>RAG連動なし]
+    D -->|DELETE /documents/id| K[documents.py: 削除]
+    K --> L[vectorstore.py: delete_chunks<br>関連削除]
+    D -->|POST /chat| M[chat.py: chat]
+    M --> N[chain.py: answer_question]
+    N --> O[vectorstore.py: search<br>top_k=3]
+    O --> P[llm/provider.py: generate_answer<br>Fake既定]
+    P --> Q[回答＋source_ids返却]

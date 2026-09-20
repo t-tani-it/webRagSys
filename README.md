@@ -150,6 +150,8 @@ python -m ruff check src tests config.py
 
 ## ドキュメント
 - `docs/beginner_overview.md`：Python中級・RAG初心者向け解説（実コード照合済み、PDF付き、5章に操作と内部の対応表あり）
+- `docs/beginner_overview_RevA.md`：上記の別名保存版（です調統一、略語展開、SQLite正規明記、PDF付き）
+- `diagrams/*_RevA.md`：図6件の別名保存版（読み方と実コード対応付き、.mmd＋.pdf）
 - `docs/handover.md`：進捗管理（方針→実装→結果→残タスク→実行コマンド、PDF付き）
 - `diagrams/`：フローチャート、シーケンス、クラス（RAG／モジュール）、mindmap、状態遷移（.mmd＋.md＋.pdf）
 - 図PDF生成：`diagrams/convert_to_pdf.ps1`（mermaid-cli、前提Node.js）
