@@ -1,0 +1,12 @@
+flowchart TD
+    A(["作業開始"]) --> B[venv有効化<br>プロンプトに.venv表示]
+    B --> C[uvicorn起動<br>src.api.main:app]
+    C --> D[動作確認3点<br>health docs documents]
+    D -->     E["/docsを開く<br>操作画面"]
+    E --> F[POST documents<br>文書を登録する]
+    F --> G[Code 201<br>返却idを控える]
+    G --> H[POST chat<br>質問を送る]
+    H --> I[Code 200<br>answer欄が回答]
+    I --> J{続けるか}
+    J -->|はい| F
+    J -->|いいえ| K([Ctrl+Cで停止])
