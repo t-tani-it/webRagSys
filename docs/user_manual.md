@@ -7,7 +7,7 @@
 
 ## 1. 作業の全体像
 
-![操作フロー図](assets/user_manual_flow.png)
+<img src="assets/user_manual_flow.png" alt="操作フロー図" style="max-height: 150mm; width: auto;">
 
 <details>
 <summary>図の元データ（Mermaid）</summary>
