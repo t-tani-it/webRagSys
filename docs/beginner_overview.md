@@ -368,6 +368,120 @@ dot / (na * nb)
 
 ---
 
+## 5. 操作と内部の対応（/docs利用者向け）
+
+本章は操作画面（`/docs`）の表示と内部処理の対応を1か所にまとめたものである。
+たとえるなら、5.1は案内板の読み方、5.2は券売機の番号案内、5.3は厨房の手順書である。
+
+### 5.1 /docsの4分類の読み方
+
+| 分類 | 所属 | 役割 |
+|------|------|------|
+| default | GET /health | 生存確認。タグなしのため未分類置場に表示される |
+| documents | 文書CRUD5件 | 登録・一覧・詳細・更新・削除 |
+| chat | POST /chat | 質問応答 |
+| schemas | 型定義 | 入出力雛形の参照用。実行対象ではない |
+
+**注意点**：`/`は未定義のため404が正常である。確認は`/health`、``/docs``、`/documents`の3件で行う。
+
+### 5.2 群別Code対応表
+
+![操作Code対応図](assets/overview_ops.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
+
+```mermaid
+flowchart TD
+    A(["/docsを開く"]) --> B{操作群を選択}
+    B -->|default| C[GET /health<br>生存確認]
+    C --> D{Code判定}
+    D -->|200 ok| E[以降操作可]
+    D -->|接続不可| F[サーバ起動確認へ]
+    B -->|documents| G[CRUD操作]
+    G --> H{Code判定}
+    H -->|200 201 204| I[成功 body確認]
+    H -->|404| J[ID番号確認]
+    H -->|422| K[入力修正し再送]
+    B -->|chat| L[POST /chat 質問送信]
+    L --> M{Code判定}
+    M -->|200| N[answer欄が回答]
+    M -->|422| O[質問文修正し再送]
+    M -->|500| P[再起動し再送]
+```
+</details>
+
+#### default群 GET /health
+
+| Code | 意味 | 対応 |
+|------|------|------|
+| 200 body ok | サーバ生存確定 | 以降操作可 |
+| 接続自体不可 | サーバ未起動か別ポート | 起動確認に戻る |
+
+default群にDELETEは存在しない。`/docs`に表示なしが正常である。
+
+#### documents群
+
+| 操作 | Code | 意味 | 対応 |
+|------|------|------|------|
+| GET /documents | 200 [] | 登録ゼロで正常 | 異常ではない |
+| GET /documents | 200 件数あり | 登録済み一覧 | body確認 |
+| GET /documents/id | 200 | 詳細表示 | body確認 |
+| GET /documents/id | 404 | 存在しないID | 番号確認 |
+| GET /documents/id | 422 | ID欄に数字以外 | 数字に修正 |
+| POST /documents | 201 | 登録成功 | 返却idを控える |
+| POST /documents | 422 | titleかcontentが空 | 両方記載し再送 |
+| PUT /documents/id | 200 | 更新成功 | 関連検索情報も置換済み |
+| PUT /documents/id | 404 | 対象なし | id確認 |
+| PUT /documents/id | 422 | 入力規則違反 | 空欄修正 |
+| DELETE /documents/id | 204 | 削除成功 | bodyなしが正常 |
+| DELETE /documents/id | 404 | 対象なし | id確認 |
+
+#### chat群 POST /chat
+
+| Code | 意味 | 対応 |
+|------|------|------|
+| 200 answerあり source_idsあり | 会話成立 | answer欄が回答、source_idsが根拠番号 |
+| 200 answerあり source_ids空 | 根拠なし回答 | 先に文書登録 |
+| 422 | question空 | 1文字以上記入し再送 |
+| 500 | 内部障害 | 再起動し再送。継続時は記録する |
+
+**会話成立条件**：先にPOST /documentsで登録し、次にPOST /chatで質問する。逆順では根拠空になる。
+
+### 5.3 内部trace（画面の裏側）
+
+![内部処理図](assets/overview_internals.png)
+
+<details>
+<summary>図の元データ（Mermaid）</summary>
+
+```mermaid
+flowchart LR
+    A[受付<br>FastAPI] --> B[検査<br>空欄と型]
+    B -->|一覧詳細| C[書庫直読<br>documents表]
+    B -->|登録更新| D[書庫保存<br>documents表]
+    D --> E[索引作成<br>分割と数値化]
+    E --> F[索引保存<br>chunks表]
+    B -->|削除| G[索引削除<br>chunks表]
+    G --> H[本体削除<br>documents表]
+    B -->|質問| I[類似検索<br>上位3件]
+    I --> J[回答生成<br>Fake既定]
+    J --> K[回答と参照ID]
+```
+</details>
+
+- 受付はFastAPIが行う。接続は要求ごとに開閉する。
+- 検査で空欄と型を確認する。違反は422で返す。
+- 一覧と詳細は書庫直読みでRAG不使用である。
+- 登録と更新は保存後に索引を作り直す。削除は索引削除が先である。
+- 質問は類似検索の上位3件だけを回答生成に渡す。
+
+### 5.4 回答と異常の見分け方
+
+- 成功形は`answer`と`source_ids`を持つ。Code 200で返る。
+- 失敗形は`detail`と`msg`を持つ。Code 422等で返る。
+- `/docs`は両雛形を常時表示する。実結果のCodeで判別する。
+
 ## 付録：学習の順番
 
 ```text
@@ -383,6 +497,7 @@ STEP 9: src/rag/chain.py          → 回答手順を読む
 STEP 10: src/api/routers/chat.py  → 質問応答を読む
 STEP 11: tests/                   → 検証内容を読む
 STEP 12: diagrams/                → 図で全体を復習
+STEP 13: 本書5章                   → 操作と内部の対応を復習
 ```
 
 ---

@@ -1,0 +1,16 @@
+flowchart TD
+    A(["/docsを開く"]) --> B{操作群を選択}
+    B -->|default| C[GET /health<br>生存確認]
+    C --> D{Code判定}
+    D -->|200 ok| E[以降操作可]
+    D -->|接続不可| F[サーバ起動確認へ]
+    B -->|documents| G[CRUD操作]
+    G --> H{Code判定}
+    H -->|200 201 204| I[成功 body確認]
+    H -->|404| J[ID番号確認]
+    H -->|422| K[入力修正し再送]
+    B -->|chat| L[POST /chat 質問送信]
+    L --> M{Code判定}
+    M -->|200| N[answer欄が回答]
+    M -->|422| O[質問文修正し再送]
+    M -->|500| P[再起動し再送]

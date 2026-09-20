@@ -142,7 +142,7 @@ python -m ruff check src tests config.py
 - チャット：質問送信、偽LLM回答、登録文書利用、APIエラー時処理
 
 ## ドキュメント
-- `docs/beginner_overview.md`：Python中級・RAG初心者向け解説（実コード照合済み、PDF付き）
+- `docs/beginner_overview.md`：Python中級・RAG初心者向け解説（実コード照合済み、PDF付き、5章に操作と内部の対応表あり）
 - `docs/handover.md`：進捗管理（方針→実装→結果→残タスク→実行コマンド、PDF付き）
 - `diagrams/`：フローチャート、シーケンス、クラス（RAG／モジュール）、mindmap、状態遷移（.mmd＋.md＋.pdf）
 - 図PDF生成：`diagrams/convert_to_pdf.ps1`（mermaid-cli、前提Node.js）

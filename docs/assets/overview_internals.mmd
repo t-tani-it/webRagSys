@@ -1,0 +1,11 @@
+flowchart LR
+    A[受付<br>FastAPI] --> B[検査<br>空欄と型]
+    B -->|一覧詳細| C[書庫直読<br>documents表]
+    B -->|登録更新| D[書庫保存<br>documents表]
+    D --> E[索引作成<br>分割と数値化]
+    E --> F[索引保存<br>chunks表]
+    B -->|削除| G[索引削除<br>chunks表]
+    G --> H[本体削除<br>documents表]
+    B -->|質問| I[類似検索<br>上位3件]
+    I --> J[回答生成<br>Fake既定]
+    J --> K[回答と参照ID]
