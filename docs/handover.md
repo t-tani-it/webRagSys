@@ -482,7 +482,7 @@ python -m uvicorn src.api.main:app --port 8001
 - テスト、Lintは次項で再確認する
 
 ### 残タスク
-- [ ] .venvをPython 3.11で作り直す（端末固有・現3.9.7でも動作中のため優先度低）
+- [x] .venvをPython 3.11で作り直す（利用者側で実施済み、3.11.15確認）
 
 ### 実行コマンド
 ```powershell
@@ -498,6 +498,41 @@ python -m ruff check src tests config.py
 - docs/beginner_overview.md＋.pdf（第5章追記版）
 - README.md（ドキュメント節1行更新）
 - docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 review修正フェーズ（理解可否の見直し）
+
+### 方針（計画）
+- Python中級・RAG初心者の理解可否を再確認する
+- 誤記と現状乖離を修正する。新規図は作らない
+
+### 実装（実行）
+- beginner_overview.md5件：略語展開、chain例context追加、構成図2行追加、誤記修正、on_event補足
+- README.md7件：番号重複、動作確認節新設、Docker注記、pgvector注記2件、テスト実施済み化
+- md-to-pdfでbeginner_overview.pdf再生成
+
+### 結果
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+npx md-to-pdf docs/beginner_overview.md
+npx md-to-pdf docs/handover.md
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- docs/beginner_overview.md＋.pdf（review修正版）
+- README.md（7件修正）
+- docs/handover.md＋.pdf（本ファイル）
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
