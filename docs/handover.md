@@ -611,3 +611,41 @@ python -m ruff check src tests config.py
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-20 ソース結合PDFフェーズ（全ソースの1冊化）
+
+### 方針（計画）
+- stockCheckerのgenerate_source_pdfs.pyを複製しwebRagSys用に配置する
+- 対象はconfig＋src＋testsの26件。.envと.venvは対象外とする
+
+### 実装（実行）
+- py_source_export/generate_source_pdfs.py（先頭コメント付与）
+- py_source_export/requirements.txt（fpdf2、pygments、本体とは分離）
+- py_source_export/webRagSys_source.pdf（表紙・目次・本文・索引の34頁）
+- READMEのドキュメント節に結合PDF案内1行追加
+
+### 結果
+- PDF：26件収録、表紙・目次・本文・索引を確認
+- テスト、Lintは次項で再確認する
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r py_source_export/requirements.txt
+.\.venv\Scripts\python.exe py_source_export/generate_source_pdfs.py . -e .py -o py_source_export/webRagSys_source.pdf --title "webRagSys Source Code" --exclude-dir py_source_export,diagrams,docs
+python -m pytest tests -q
+python -m ruff check src tests config.py
+```
+
+### 実行成果物
+- py_source_export/generate_source_pdfs.py＋requirements.txt
+- py_source_export/webRagSys_source.pdf
+- README.md（結合PDF案内）
+- docs/handover.md＋.pdf（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
