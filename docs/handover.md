@@ -244,7 +244,7 @@ uvicorn src.api.main:app --reload
 - git push -u origin mainで公開
 
 ### 結果
-- 公開先：https://github.com/t-tani-it/webRagSys
+- 公開先：GitHub上のwebRagSysリポジトリ
 - mainがorigin/mainを追跡する状態を確認
 - git statusはクリーン（handover更新分を除く）
 
@@ -751,6 +751,59 @@ npx.cmd md-to-pdf docs/handover.md --config-file docs/pdf_config.json
 - docs/pdf_config.json
 - README.md、README.pdf
 - docs/handover.md、docs/handover.pdf
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-29 README・GitHub About更新と公開情報再点検フェーズ
+
+### 方針（計画）
+- README冒頭の説明を従来の約2倍にし、同一文をGitHub Aboutにも設定する
+- READMEの技術スタックを現行のFake／OpenAI／Ollama、Qwen、SQLite／PostgreSQL構成に合わせる
+- セットアップと起動の両方にPowerShell／cmd別のvenv有効化手順を記載する
+- GitHub公開中のファイルと作業ツリーを再点検し、公開禁止情報候補を一般化する
+- README.pdfと本handoverのPDFをページ番号付きで再生成する
+
+### 実装（実行）
+- README冒頭をRAG、文書検索、Fake／OpenAI／Ollama選択を含む説明に更新し、GitHub Aboutにも同じ説明を設定
+- READMEの技術スタック表を更新：SQLite、PostgreSQL＋pgvector、LangChain／langchain-ollama、Qwen3.5:4b、qwen3-embedding:0.6b
+- READMEの「セットアップ」「起動」にPowerShell（Activate.ps1）とcmd（activate.bat）を別々に記載
+- AGENTS.mdのWindowsパス例を一般表現へ変更
+- docs/handover.mdの公開先表記からGitHub所有者ハンドルを除去
+- docs/pdf_config.jsonを使いREADME.pdfとdocs/handover.pdfを再生成
+
+### 公開情報監査結果
+- origin/mainと作業ツリーの現行ファイルを確認し、追跡対象の.envなし、実APIキー／トークンなし
+- 現行ファイルにあったWindowsパスの説明用例とGitHub所有者ハンドルを一般表現へ変更
+- READMEのxxxxおよびDB接続サンプルのuser/passwordは説明用プレースホルダーであり、実認証情報ではない
+- Git履歴のAGENTS.mdにWindowsパスの説明用例、旧handoverに公開リポジトリURLが残る。実パス・キー・トークンではなく、履歴改変は行わない
+
+### 結果
+- READMEの説明文とGitHub Aboutの説明文を一致させた
+- 技術スタック表と両シェルのvenv手順を更新
+- README.pdfとdocs/handover.pdfをページ番号付きで再生成
+- GitHub AboutのdescriptionがREADME冒頭と一致することを確認
+- 文書・GitHub Aboutのみの変更のためpytest／ruffは再実行対象外（直前のコード検証でruff成功、pytest 9 passed 2 skipped）
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+# README／handover PDF
+npx.cmd md-to-pdf README.md --config-file docs/pdf_config.json
+npx.cmd md-to-pdf docs/handover.md --config-file docs/pdf_config.json
+# GitHub About（descriptionはREADME冒頭と同一文）
+gh repo edit <owner>/<repo> --description "<README冒頭の説明文>"
+```
+
+### 実行成果物
+- README.md、README.pdf
+- AGENTS.md
+- docs/handover.md、docs/handover.pdf
+- GitHub repository About description
 
 ## 公開禁止情報
 公開禁止情報は含まれていません

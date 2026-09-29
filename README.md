@@ -1,6 +1,6 @@
 # webRagSys — 社内文書検索・AIチャットシステム
 
-社内文書を登録・管理し、ユーザーからの質問に対して登録文書を検索したうえで生成AIが回答するWeb APIシステム。
+webRagSysは、社内文書を登録・管理し、質問に関連する文書を検索して、その内容を根拠にAIが回答するWeb APIシステムです。FastAPIとLangChainによるRAGを実装し、Fake・OpenAI・ローカルOllama（Qwen3.5）を切り替えながら、文書検索から回答生成までの流れを学べます。
 
 ## システム概要
 - 文書管理（CRUD）とAIチャット（RAG）を提供するFastAPIシステム
@@ -11,16 +11,17 @@
 - 文書登録、一覧取得、詳細取得、更新、削除
 - AIチャット：質問→Embedding→類似文書検索→LLM回答
 - RAG：LangChain利用（TextSplitter、Embeddings、VectorStore、Retriever、Chain）
-- 既定は課金回避の偽実装（FakeEmbeddings＋Fake LLM）。本番のみ外部LLM API使用
+- 既定は課金回避のFake実装。OpenAI APIまたはローカルOllama（Qwen3.5）へ切替可能
 
 ## 使用技術
 | 項目 | 内容 |
 |------|------|
 | 言語 | Python 3.10+（実測3.11） |
 | API | FastAPI、Pydantic |
-| DB | PostgreSQL＋pgvector、SQLAlchemy |
-| RAG | LangChain |
-| LLM | 外部LLM API（モデル非依存）、既定は偽実装 |
+| DB | SQLite（ローカル動作確認済み）、PostgreSQL＋pgvector（拡張の導入が必要）、SQLAlchemy |
+| RAG | LangChain、langchain-ollama |
+| LLM | Fake（既定）、OpenAI API、ローカルOllama（qwen3.5:4b） |
+| Embedding | Fake（8次元）、OpenAI、ローカルOllama（qwen3-embedding:0.6b、1024次元） |
 | テスト | pytest |
 | Lint | ruff |
 | 環境 | Git／GitHub、venv（Docker／docker-composeは構成見本のみで起動対象外） |
@@ -51,11 +52,16 @@ webRagSys/
 # 0. プロジェクト直下へ移動
 cd <プロジェクト直下>
 
-# 1. 仮想環境作成・有効化（venv標準）
+# 1. 仮想環境作成（初回のみ）
 python -m venv .venv
+
+## PowerShellで有効化
 .\.venv\Scripts\Activate.ps1
 
-# 2. 依存導入
+## コマンドプロンプト（cmd）で有効化
+.\.venv\Scripts\activate.bat
+
+# 2. 依存導入（有効化したPowerShellまたはcmdで実行）
 pip install -r requirements.txt
 
 # 3. 環境変数ファイル作成（公開用見本から複製）
@@ -71,11 +77,19 @@ copy .env.example .env
 ```
 
 ## 起動方法
-```bash
-# .venv有効化が前提（プロンプトに(.venv)表示を確認）
+### PowerShellで仮想環境を有効化
+```powershell
 .\.venv\Scripts\Activate.ps1
+```
 
-# ローカル起動（正規の動作確認手段）
+### コマンドプロンプト（cmd）で仮想環境を有効化
+```cmd
+.\.venv\Scripts\activate.bat
+```
+
+有効化後、プロンプトに`(.venv)`が表示されていることを確認します。どちらのシェルでも、次のコマンドでAPIを起動できます。
+
+```console
 uvicorn src.api.main:app --reload
 ```
 
@@ -169,7 +183,7 @@ python -m ruff check src tests config.py
 
 ## 完成条件（初期版）
 1. FastAPI起動、文書CRUD動作（ローカル起動で確認、DBはPostgreSQLまたはSQLite退避）
-2. LLM API利用可（本番）／偽実装動作（既定）
+2. Fake（既定）、OpenAI APIまたはローカルOllamaを用いた回答生成
 3. Embedding化、Vector保存、類似検索、RAG回答
 4. GitHubでREADME確認、基本テスト実行
 5. Docker構築は対象外（storage制約のため、2026-09-19決定）
