@@ -137,27 +137,29 @@ curl -X POST http://localhost:8000/chat ^
 
 ## テスト方法
 ```bash
-# 全テスト（偽実装のため外部通信なし）
+# 全テスト（Fakeは外部通信なし。OllamaケースはローカルOllamaを使用）
 python -m pytest tests -q
 
 # Lint
 python -m ruff check src tests config.py
 ```
 
-テスト内容（実施済み7件）：
+テスト内容：
 - 文書：登録、取得、更新、削除、存在しないIDのエラー
 - チャット：質問送信、偽LLM回答、登録文書利用、APIエラー時処理
+- backend組合せ：fake／Ollama × SQLite／PostgreSQL。PostgreSQLケースは`TEST_DATABASE_URL`とpgvectorが必要で、利用不可時はskip
 
 ## ドキュメント
 - `docs/beginner_overview.md`：Python中級・RAG初心者向け解説（実コード照合済み、PDF付き、5章に操作と内部の対応表あり）
 - `docs/beginner_overview_RevA.md`：上記の別名保存版（です調統一、略語展開、SQLite正規明記、PDF付き）
+- `docs/beginner_overview_RevE.md`：Rev.D継承版（ローカルLLM、Embedding次元、pgvector、索引カードの再作成と文書別更新を補足、PDF付き）
 - `docs/user_manual.md`：取扱説明書（起動から/docs操作、登録、会話、異常時まで、PDF付き）
 - `py_source_export/webRagSys_source.pdf`：全ソース結合PDF（行番号・ハイライト付き、config＋src＋testsの26件）
 - `diagrams/*_RevA.md`：図6件の別名保存版（読み方と実コード対応付き、.mmd＋.pdf）
 - `docs/handover.md`：進捗管理（方針→実装→結果→残タスク→実行コマンド、PDF付き）
 - `diagrams/`：フローチャート、シーケンス、クラス（RAG／モジュール）、mindmap、状態遷移（.mmd＋.md＋.pdf）
 - 図PDF生成：`diagrams/convert_to_pdf.ps1`（mermaid-cli、前提Node.js）
-- docs PDF生成：md-to-pdf（例：`npx md-to-pdf docs/beginner_overview.md`）
+- docs PDF生成：md-to-pdf＋`docs/pdf_config.json`（例：`npx md-to-pdf docs/beginner_overview_RevE.md --config-file docs/pdf_config.json`、ページ番号付き）
 
 ## 今後の拡張案
 - ユーザー認証、文書ファイルアップロード、PDF／Word対応

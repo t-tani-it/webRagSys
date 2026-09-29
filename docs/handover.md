@@ -649,3 +649,108 @@ python -m ruff check src tests config.py
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
+
+---
+
+## 2026-09-29 ローカルLLM・Postgres対応フェーズ（Ollama＋4パターン）
+
+### 方針（計画）
+- 会話はqwen3.5:4b、Embeddingはqwen3-embedding:0.6b（1024次元）で統一する
+- config.pyのみでなくprovider／embeddings／models／requirementsを連動改修する
+- DBは単一document_chunks維持、分岐毎テーブルは作らない、次元変更時は再作成＋再登録
+- テストはfake/ollama × sqlite/postgresの4パターン、不可時はskipする
+
+### 実装（実行）
+- ollama pull qwen3-embedding:0.6b取得、/api/embedで1024次元返却確認
+- requirements.txtへlangchain-ollama追加、.venvへ導入しollama-ok確認
+- config.pyへllm_provider／ollama_base_url／ollama_model／ollama_embed_model／ollama_num_ctx／embedding_dim追加
+- src/llm/provider.pyを3分岐化（fake／ollama ChatOllama／openai）、think=False＋num_ctx=8192
+- src/rag/embeddings.pyを3分岐化（Fake8次元／OllamaEmbeddings／OpenAI）、関数内get_settings化
+- src/rag/vectorstore.pyのTOP_K固定を関数内取得化、src/db/models.pyの次元を設定参照化
+- src/db/database.pyのpgvector拡張失敗時にRuntimeError化、password内#は%23注記
+- .env.exampleへOllama変数とEMBEDDING_DIM見本追加
+- tests/test_backends.py新設（A fake+sqlite／B fake+PostgreSQL／C ollama+sqlite／D ollama+PostgreSQL。PGケースは別process E2E）
+- ruff BLE001／LOG015／I001／E501修正
+
+### 結果
+- ruffエラー0（python -m ruff check src tests config.py → All checks passed）
+- pytest 9 passed 2 skipped（既存7件＋C2件成功、B/Dはpgvector未導入のためskip）
+- 実HTTP検証（port 8004、sqlite＋ollama）：POST /documents→id=1、POST /chat→「休暇は 10 日です。」＋source_ids=1、FAKEなし確認
+- Postgres 18稼働確認（port 5432疎通）、psql.exe存在確認、share/extensionにvectorなし→pgvector未導入確定
+
+### 残タスク
+- [ ] pgvector導入（PG18 Windowsへ拡張追加、確認SQL：SELECT * FROM pg_available_extensions WHERE name='vector'）
+- [ ] TEST_DATABASE_URL設定（password内#は%23符号化、例：pass%23word）
+- [ ] B/D実行（Bは8次元Vector、DはEMBEDDING_DIM=1024別processで再作成＋再登録後にE2E）
+- [ ] READMEとbeginner_overviewへOllama運用追記（任意）
+
+### 実行コマンド
+```powershell
+# 依存
+.\.venv\Scripts\python.exe -m pip install -q "langchain-ollama>=0.2"
+# Lint／テスト
+.\.venv\Scripts\python.exe -m ruff check src tests config.py
+.\.venv\Scripts\python.exe -m pytest tests -q
+# Ollama実機検証（別process起動→検証→停止）
+$env:USE_FAKE="false"; $env:LLM_PROVIDER="ollama"; $env:EMBEDDING_DIM="1024"
+.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --port 8004
+# pgvector確認（psqlのフルパスで実行）
+& "$env:ProgramFiles\PostgreSQL\18\bin\psql.exe" -h 127.0.0.1 -U postgres -d postgres -c "SELECT * FROM pg_available_extensions WHERE name='vector';"
+```
+
+### 実行成果物
+- config.py、requirements.txt、.env.example
+- src/llm/provider.py、src/rag/embeddings.py、src/rag/vectorstore.py
+- src/db/models.py、src/db/database.py
+- tests/test_backends.py
+- docs/handover.md（本ファイル）
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-09-29 初心者資料Rev.E補足フェーズ（Embeddingと文書別の索引更新）
+
+### 方針（計画）
+- Rev.Dを変更せず複製し、Rev.Eとして補足節を追加する
+- 直近の質問・回答を初心者向けに整理し、末尾に1節追加する
+- 実コードの行番号と具体例を示し、製造元が変わる索引カードのたとえを含める
+- 変更箇所は右側線で示し、Markdownと同名PDFを作成する
+
+### 実装（実行）
+- docs/beginner_overview_RevD.mdを複製してdocs/beginner_overview_RevE.mdを作成
+- Rev.E末尾に第6章を追加：pgvectorの現状、EMBEDDING_DIM、チャットモデルとEmbeddingモデルの違い、think=False、文書ID単位のCRUDと索引更新
+- Embeddingモデル変更時は、次元が同じなら全チャンク再Embedding、次元も変わる場合はDB列変更も必要であると区別
+- ローカル設定例と2026-09-29時点のPostgreSQL 18／pgvector未導入状況を記録
+- READMEのドキュメント一覧にRev.Eを追加
+- docs/pdf_config.jsonを追加し、PDF下部にページ番号／総ページ数を表示
+- Rev.E PDFをmd-to-pdfで生成し、ページ番号と右側線表示を確認
+
+### 結果
+- beginner_overview_RevD.mdは変更せず、Rev.Eを追加
+- READMEにRev.E案内を追加
+- beginner_overview_RevE.pdf生成済み（17ページ、ページ番号、末尾補足節、赤色右側線を確認）
+- 文書のみの変更のため、pytest／ruffは再実行対象外（直前のローカルLLMフェーズでpytest 9 passed 2 skipped、ruff成功を確認済み）
+- README.pdfとdocs/handover.pdfを再生成
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+# 初心者資料
+npx.cmd md-to-pdf docs/beginner_overview_RevE.md --config-file docs/pdf_config.json
+# README／handover PDF
+npx.cmd md-to-pdf README.md --config-file docs/pdf_config.json
+npx.cmd md-to-pdf docs/handover.md --config-file docs/pdf_config.json
+```
+
+### 実行成果物
+- docs/beginner_overview_RevE.md、docs/beginner_overview_RevE.pdf
+- docs/pdf_config.json
+- README.md、README.pdf
+- docs/handover.md、docs/handover.pdf
+
+## 公開禁止情報
+公開禁止情報は含まれていません
