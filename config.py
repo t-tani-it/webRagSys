@@ -29,11 +29,19 @@ class Settings(BaseSettings):
     chunk_overlap: int = 50  # チャンク間の重なり文字数
     top_k: int = 3  # 類似検索の取得件数
 
-    # LLM関連の設定値（偽実装切替）
+    # LLM関連の設定値（偽装／外部切替）
+    # 解説：USE_FAKE=trueは課金なしFakeを強制する。false時のみllm_providerを見る。
     use_fake: bool = True  # True=課金なしFake、False=外部LLM API
+    llm_provider: str = "fake"  # fake|openai|ollama（USE_FAKE=false時のみ有効）
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
     openai_embedding_model: str = "text-embedding-3-small"
+    # Ollama関連の設定値（ローカルLLM用）
+    ollama_base_url: str = "http://localhost:11434"  # Ollamaサーバ基底URL
+    ollama_model: str = "qwen3.5:4b"  # 会話用モデル名（ollama list表記と一致）
+    ollama_embed_model: str = "qwen3-embedding:0.6b"  # Embedding用モデル名
+    ollama_num_ctx: int = 8192  # LLMコンテキスト長（RAG文書+質問用）
+    embedding_dim: int = 8  # Fake時8、qwen3-embedding:0.6b時1024に変更する
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

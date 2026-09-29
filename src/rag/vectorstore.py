@@ -19,11 +19,6 @@ from config import get_settings
 from src.db.models import DocumentChunk
 from src.rag.embeddings import embed_query, embed_texts
 
-settings = get_settings()
-
-# 設定値ブロック（冒頭集約）
-TOP_K = settings.top_k
-
 
 def _cosine(a: list[float], b: list[float]) -> float:
     """コサイン類似度を計算する。
@@ -78,7 +73,7 @@ def delete_chunks(db: Session, document_id: int) -> None:
     db.commit()
 
 
-def search(db: Session, query: str, top_k: int = TOP_K) -> list[DocumentChunk]:
+def search(db: Session, query: str, top_k: int | None = None) -> list[DocumentChunk]:
     """質問に類似したチャンクを返す。
 
     Args:
@@ -92,6 +87,9 @@ def search(db: Session, query: str, top_k: int = TOP_K) -> list[DocumentChunk]:
     Side Effects:
         なし（読取のみ）。
     """
+    # 解説：既定件数は設定から読む。テスト時の切替に対応するためである。
+    if top_k is None:
+        top_k = get_settings().top_k
     qvec = embed_query(query)
     rows = db.execute(select(DocumentChunk)).scalars().all()
     scored = [(_cosine(qvec, list(r.embedding or [])), r) for r in rows]

@@ -17,8 +17,20 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.database import Base, engine
 
-# 設定値ブロック：embedding次元（Fake時は小次元で十分）
-EMBEDDING_DIM = 8
+
+# 設定値ブロック：embedding次元（config集約、Fake時8／ollama時1024）
+# 解説：切替時はテーブル再作成と全件再Embeddingが必須である。
+def _get_embedding_dim() -> int:
+    """設定値からembedding次元を返す。"""
+    try:
+        from config import get_settings
+
+        return int(get_settings().embedding_dim)
+    except (ImportError, AttributeError, ValueError):
+        return 8
+
+
+EMBEDDING_DIM = _get_embedding_dim()
 
 
 def _embedding_column() -> object:

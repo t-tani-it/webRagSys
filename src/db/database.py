@@ -68,11 +68,23 @@ def init_db() -> None:
 
     Side Effects:
         テーブル作成、拡張作成（Postgres時のみ）。
+    Raises:
+        RuntimeError: Postgresでpgvector拡張が未導入の場合。
     """
+    import logging
+
     from src.db import models  # noqa: F401 解説：テーブル登録のため遅延importする。
 
     # 解説：URL文字列ではなく実engineの方言で判定する（SQLite退避時は拡張不要）。
+    # 注意：DATABASE_URLのpasswordに#を含む場合は%23に符号化すること。
+    logger = logging.getLogger(__name__)
     if engine.dialect.name == "postgresql":
-        with engine.begin() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        try:
+            with engine.begin() as conn:
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception as exc:
+            logger.warning("pgvector拡張の有効化に失敗: %s", exc)
+            raise RuntimeError(
+                "pgvector拡張が未導入である。PostgreSQLへ導入後に再実行すること"
+            ) from exc
     Base.metadata.create_all(bind=engine)

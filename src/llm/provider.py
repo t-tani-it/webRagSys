@@ -13,8 +13,6 @@ Change Log: 2026-09-19 初版作成。
 from config import get_settings
 from src.llm.fake_provider import fake_answer
 
-settings = get_settings()
-
 
 def generate_answer(question: str, context: str) -> str:
     """回答文を生成する。
@@ -30,9 +28,28 @@ def generate_answer(question: str, context: str) -> str:
         RuntimeError: 本番設定でAPIキー未設定の場合。
 
     Side Effects:
-        本番時のみ外部API通信する。
+        本番時のみ外部API通信する。Ollama時はローカルHTTP通信する。
     """
-    if settings.use_fake or not settings.openai_api_key:
+    # 解説：関数内で設定を読む。テスト時の切替に対応するためである。
+    settings = get_settings()
+    if settings.use_fake or settings.llm_provider == "fake":
+        return fake_answer(question, context)
+    if settings.llm_provider == "ollama":
+        try:
+            from langchain_ollama import ChatOllama
+        except ImportError as exc:
+            raise RuntimeError("langchain-ollama未導入") from exc
+        # 解説：/set nothinking相当はthink=False、RAG用にnum_ctxを広げる。
+        llm = ChatOllama(
+            model=settings.ollama_model,
+            base_url=settings.ollama_base_url,
+            temperature=0,
+            num_ctx=settings.ollama_num_ctx,
+            think=False,
+        )
+        prompt = f"以下の社内文書を基に回答してください。\n\n{context}\n\n質問：{question}"
+        return str(llm.invoke(prompt).content)
+    if not settings.openai_api_key:
         return fake_answer(question, context)
     try:
         from langchain_openai import ChatOpenAI

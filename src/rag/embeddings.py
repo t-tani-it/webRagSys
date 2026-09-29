@@ -12,13 +12,12 @@ Change Log: 2026-09-19 初版作成。
 
 from config import get_settings
 
-settings = get_settings()
-
 # 設定値ブロック（冒頭集約）
-EMBEDDING_DIM = 8  # Fakeベクトル次元（models.pyと一致させる）
+# 解説：Fake既定8次元。Ollama実運用はconfigのembedding_dimに従う。
+FAKE_DIM = 8
 
 
-def _fake_vector(text: str, dim: int = EMBEDDING_DIM) -> list[float]:
+def _fake_vector(text: str, dim: int = FAKE_DIM) -> list[float]:
     """決定的な偽ベクトルを生成する。
 
     Args:
@@ -49,9 +48,24 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
         RuntimeError: 本番設定でAPIキー未設定の場合。
 
     Side Effects:
-        本番時のみ外部API通信する。
+        本番時のみ外部API通信する。Ollama時はローカルHTTP通信する。
     """
-    if settings.use_fake or not settings.openai_api_key:
+    # 解説：関数内で設定を読む。テスト時の切替に対応するためである。
+    settings = get_settings()
+    if settings.use_fake or settings.llm_provider == "fake":
+        return [_fake_vector(t) for t in texts]
+    if settings.llm_provider == "ollama":
+        try:
+            from langchain_ollama import OllamaEmbeddings
+        except ImportError as exc:
+            raise RuntimeError("langchain-ollama未導入") from exc
+        # 解説：会話モデルとEmbeddingモデルは別物である。
+        model = OllamaEmbeddings(
+            model=settings.ollama_embed_model,
+            base_url=settings.ollama_base_url,
+        )
+        return model.embed_documents(texts)
+    if not settings.openai_api_key:
         return [_fake_vector(t) for t in texts]
     try:
         from langchain_openai import OpenAIEmbeddings
