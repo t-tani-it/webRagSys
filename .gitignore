@@ -8,3 +8,7 @@ logs/
 data/
 .venv/
 venv/
+practice/
+
+# Charts
+charts/*.png
