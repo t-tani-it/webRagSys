@@ -103,6 +103,48 @@ uvicorn src.api.main:app --reload
 
 ---
 
+## 2026-10-26 ローカル差分同期・検証フェーズ
+
+### 方針（計画）
+- Rev.F資料とSwagger操作説明のローカル差分を、既存作業を保護したうえでGitHubへ反映する
+- 本番DBへ接続せず、Fakeとテスト用SQLiteでテストする
+- 公開禁止情報を確認し、論理的な単位に分けてコミットする
+
+### 実装（実行）
+- OpenAPIのタイトル、操作順、エンドポイント説明、schemaの例を日本語で補足した
+- Rev.F初心者向け資料とREADME／handoverのPDFを更新対象に含めた
+- `.gitignore`へローカル練習領域と紹介画像の除外設定を追加した
+- 既存のREADME差分と未追跡のRev.F資料を保持した
+
+### 結果
+- pytest: 9 passed、2 skipped。PostgreSQL／pgvectorケースはテストDB未設定のためskip
+- ruff: 全チェック合格
+- 公開禁止情報: 変更対象のテキストとPDFメタデータにローカルユーザーパス、APIキー、トークンなし
+- GitHubの`main`へローカル差分を反映し、ローカルとリモートのcommit位置を一致させた
+
+### 残タスク
+- PostgreSQL＋pgvectorの実DBテストは未実施
+
+### 実行コマンド
+```powershell
+$env:USE_FAKE = "true"
+$env:DATABASE_URL = "sqlite:///./test.db"
+$env:TEST_DATABASE_URL = ""
+python -m pytest -vv --tb=short tests
+python -m ruff check src tests config.py
+npx.cmd md-to-pdf docs/handover.md --config-file docs/pdf_config.json
+```
+
+### 実行成果物
+- OpenAPI操作説明: `src/api/main.py`、`src/api/routers/`、`src/schemas/`
+- Rev.F資料: `docs/beginner_overview_RevF.md`、`docs/beginner_overview_RevF.pdf`
+- README／handover: `README.md`、`README.pdf`、`docs/handover.md`、`docs/handover.pdf`
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
 ## 2026-09-19 実装フェーズ（骨格＋CRUD＋RAG＋chat＋テスト）
 
 ### 方針（計画）
@@ -804,6 +846,48 @@ gh repo edit <owner>/<repo> --description "<README冒頭の説明文>"
 - AGENTS.md
 - docs/handover.md、docs/handover.pdf
 - GitHub repository About description
+
+## 公開禁止情報
+公開禁止情報は含まれていません
+
+---
+
+## 2026-10-09 初心者資料Rev.F補足フェーズ（Embedding出力と次元数）
+
+### 方針（計画）
+- Rev.Eを変更せず複製し、初心者向け資料の最新版Rev.Fを作成する
+- 登録文書と質問のEmbedding対象、1件あたりのベクトル形状、次元数の傾向を1節追加する
+- コード行番号とFake／Ollama／OpenAIの具体例を記載する
+- Rev.Fでは今回の追加節だけを右側赤線で示し、ページ番号付きPDFを生成する
+
+### 実装（実行）
+- `docs/beginner_overview_RevE.md`を複製し、`docs/beginner_overview_RevF.md`を作成
+- Rev.Fの第7章に以下を追加：文書はチャンクごとにEmbedding、質問は分割せず1ベクトル、`(チャンク数, 次元数)`と`(次元数,)`の形、次元数の表現力と計算量、モデル・次元の一致条件
+- 現行コードに基づきFake 8次元、Ollama qwen3-embedding:0.6b 1024次元、既定OpenAI text-embedding-3-small 1536次元を記載
+- Rev.Fから継承元の旧改定箇所の赤線を除き、第7章だけに右側赤線を配置
+- READMEの初心者資料案内とPDF生成例をRev.Fへ更新
+- `docs/pdf_config.json`を使ってRev.F PDFとREADME PDFをページ番号付きで再生成
+
+### 結果
+- Rev.EのMarkdownとPDFは変更せず保持
+- Rev.F PDF生成成功、README PDF再生成成功
+- handover PDFは本記録追加後に再生成
+- 文書のみの変更のため、pytest／ruffは実行対象外
+
+### 残タスク
+- なし
+
+### 実行コマンド
+```powershell
+npx.cmd md-to-pdf docs/beginner_overview_RevF.md --config-file docs/pdf_config.json
+npx.cmd md-to-pdf README.md --config-file docs/pdf_config.json
+npx.cmd md-to-pdf docs/handover.md --config-file docs/pdf_config.json
+```
+
+### 実行成果物
+- `docs/beginner_overview_RevF.md`、`docs/beginner_overview_RevF.pdf`
+- `README.md`、`README.pdf`
+- `docs/handover.md`、`docs/handover.pdf`
 
 ## 公開禁止情報
 公開禁止情報は含まれていません
