@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="charts/社内文書を質問できるRAG API.png" alt="webRagSysの紹介バナー">
+</p>
+
 # webRagSys — 社内文書検索・AIチャットシステム
 
 webRagSysは、社内文書を登録・管理し、質問に関連する文書を検索して、その内容を根拠にAIが回答するWeb APIシステムです。FastAPIとLangChainによるRAGを実装し、Fake・OpenAI・ローカルOllama（Qwen3.5）を切り替えながら、文書検索から回答生成までの流れを学べます。
