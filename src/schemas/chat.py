@@ -16,11 +16,19 @@ from pydantic import BaseModel, Field
 class ChatRequest(BaseModel):
     """質問リクエスト。"""
 
-    question: str = Field(min_length=1)
+    # 解説：項目名は英語維持し、説明文だけ日本語化して互換性を保つ。
+    question: str = Field(
+        min_length=1,
+        description="質問文。1文字以上。空は422。先に文書登録が必要。",
+        examples=["休暇は何日ですか。"],
+    )
 
 
 class ChatResponse(BaseModel):
     """回答レスポンス。"""
 
-    answer: str
-    source_ids: list[int] = []
+    answer: str = Field(description="回答文。根拠なしの場合もある。")
+    source_ids: list[int] = Field(
+        default=[],
+        description="根拠文書の番号一覧。空は未登録で質問した状態。",
+    )

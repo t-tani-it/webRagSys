@@ -58,13 +58,25 @@ def execute_logic_register(db: Session, payload: DocumentCreate) -> Document:
     return doc
 
 
-@router.get("", response_model=list[DocumentOut])
+@router.get(
+    "",
+    response_model=list[DocumentOut],
+    summary="文書一覧を取得する",
+    description="登録済み一覧。空[]は登録ゼロで正常。RAG不使用。",
+    response_description="文書一覧を返す。",
+)
 def list_documents(db: Session = Depends(get_db)) -> list[Document]:
     """文書一覧を返す。"""
     return list(db.execute(select(Document).order_by(Document.id)).scalars().all())
 
 
-@router.get("/{doc_id}", response_model=DocumentOut)
+@router.get(
+    "/{doc_id}",
+    response_model=DocumentOut,
+    summary="文書詳細を取得する",
+    description="控えたidを入力する。存在しない番号は404、数字以外は422。RAG不使用。",
+    response_description="文書詳細を返す。",
+)
 def get_document(doc_id: int, db: Session = Depends(get_db)) -> Document:
     """文書詳細を返す。
 
@@ -77,14 +89,30 @@ def get_document(doc_id: int, db: Session = Depends(get_db)) -> Document:
     return doc
 
 
-@router.post("", response_model=DocumentOut, status_code=201)
+@router.post(
+    "",
+    response_model=DocumentOut,
+    status_code=201,
+    summary="文書を登録する",
+    description=(
+        "先にここで登録し返却idを控えてからchatへ進む。"
+        "titleとcontentは必須で空は422。登録後に検索用情報を自動生成する。"
+    ),
+    response_description="登録した文書を返す。",
+)
 def create_document(payload: DocumentCreate, db: Session = Depends(get_db)) -> Document:
     """文書を登録する。"""
     validate_input(payload.title, payload.content)
     return execute_logic_register(db, payload)
 
 
-@router.put("/{doc_id}", response_model=DocumentOut)
+@router.put(
+    "/{doc_id}",
+    response_model=DocumentOut,
+    summary="文書を更新する",
+    description="控えたidを指定する。更新成功後は検索用情報も置換済み。対象なしは404、空欄は422。",
+    response_description="更新した文書を返す。",
+)
 def update_document(
     doc_id: int, payload: DocumentUpdate, db: Session = Depends(get_db)
 ) -> Document:
@@ -105,7 +133,13 @@ def update_document(
     return doc
 
 
-@router.delete("/{doc_id}", status_code=204)
+@router.delete(
+    "/{doc_id}",
+    status_code=204,
+    summary="文書を削除する",
+    description="索引削除が先、次に本体削除。204はbodyなしが正常。対象なしは404。",
+    response_description="削除成功時は内容なしで返す。",
+)
 def delete_document(doc_id: int, db: Session = Depends(get_db)) -> None:
     """文書を削除する。
 

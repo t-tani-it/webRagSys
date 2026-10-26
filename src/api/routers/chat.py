@@ -20,7 +20,16 @@ from src.schemas.chat import ChatRequest, ChatResponse
 router = APIRouter(tags=["chat"])
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    summary="質問に回答する",
+    description=(
+        "先にPOST /documentsで登録してから質問する。逆順では根拠空になる。"
+        "answer欄が回答、source_idsが根拠文書の番号。question空は422。"
+    ),
+    response_description="回答文と根拠文書ID一覧を返す。",
+)
 def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     """質問に回答する。
 
